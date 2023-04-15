@@ -4,63 +4,60 @@ using UnityEngine;
 
 public class FirstScript : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    [SerializeField] Camera theCamera;
+    [SerializeField] float LockSensitivity;
+    [SerializeField] float Speed;
+
+    float currentCameraRotationX;
+
+    Rigidbody myRigid;
+    void start()
     {
-        /*
-        int Level = 10;
-        float HP = 24.5f;
-        double MP = 56.1;
-        bool is_next_level = false;
-
-        if (is_next_level == true)
-        {
-            Debug.Log("다음 레벨로 넘어갑니다.");
-        }
-
-        for (int i = 0; i < 5; i++)
-        {
-            Debug.Log(i + 1 + "번째 숫자");
-        }
-
-        //배열 리스트
-
-        //배열 -> 자료형[] 배열이름 = new 자료형[배열 크기]
-
-        int[] arr = new int[5];
-
-        for (int i = 0; i < 5; i++)
-        {
-            arr[i] = (i + 1) * 10;
-        }
-
-        for (int i = 0; i < 5; i++)
-        {
-            Debug.Log((i + 1) + "번쨰 숫자는 = " + arr[i]);
-        }
-
-        //리스트 - > 동적할당 (o)  ->  list<자료형> 리스트 이름 = new List<자료형>();
-        List<int> list = new List<int>();
-        list.Add(12);
-        list.Add(56);
-        list.Add(98);
-
-        foreach (int i in list)
-        {
-            Debug.Log(i);
-        }
-        */
-
-        Class2 people = new Class2();
-        people.age = 10;
-        people.height = 177.9f;
-        people.name = "사람";
-        people.Print2();
+        if (myRigid == null)    myRi   gid = GetComponent<Rigidbody>();
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = false;
     }
+    
 
     // Update is called once per frame
     void Update()
     {
+        Move();
+        CameraRotationX();
+        CameraRotationY();
+    }
 
+    public void Move()
+    {
+        float moveDirX = Input.GetAxisRaw("Horizontal");
+        float moveDirY = Input.GetAxisRaw("Vertical");
+
+        Vector3 moveHorizontal = transform.right * moveDirX;
+        Vector3 moveVertical = transform.forward * moveDirY;
+
+        Vector3 velocity = (moveHorizontal + moveVertical).normalized * Speed;
+
+        myRigid.MovePosition(transform.position + velocity * Time.deltaTime);
+        if (Input.GetButtonDown("Jump"))
+            myRigid.AddForce(Vector3.up * 10, ForceMode.Impulse);
+    }
+
+    public void CameraRotationX()
+    {
+        float yRotation = Input.GetAxisRaw("Mouse X");
+        Vector3 characterRotationY = new Vector3(0f, yRotation, 0f) * LockSensitivity;
+        myRigid.MoveRotation(myRigid.rotation * (Quaternion.Euler(characterRotationY)));
+    }
+
+    void CameraRotationY()
+    {
+        float xRotation = Input.GetAxisRaw("Mouse Y");
+        float cameraRotationX = xRotation * LockSensitivity;
+
+        currentCameraRotationX -= cameraRotationX;
+
+        currentCameraRotationX = Mathf.Clamp(currentCameraRotationX, -68, 68);
+
+        theCamera.transform.localEulerAngles = new Vector3(currentCameraRotationX, 0f, 0f);
     }
 }
